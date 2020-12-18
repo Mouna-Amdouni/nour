@@ -45,8 +45,8 @@ class SondageType extends AbstractType
                     ]
 
             ])
-            //->add('nbQuestion')
-            // ->add('nbReponse')
+            ->add('nbQuestion')
+             ->add('nbReponse')
         ;
 
     }

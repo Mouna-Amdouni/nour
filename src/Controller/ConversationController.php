@@ -9,6 +9,7 @@ use App\Repository\UtilisateurRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -23,7 +24,7 @@ class ConversationController extends AbstractController
     /**
      * @var UtilisateurRepository
      */
-private $utilisateurRepository;
+    private $utilisateurRepository;
     /**
      * @var EntityManagerInterface
      */
@@ -35,7 +36,7 @@ private $utilisateurRepository;
 
     public function __construct(UtilisateurRepository $utilisateurRepository,
                                 EntityManagerInterface $entityManager,
-                                    ConversationRepository $conversationRepository)
+                                ConversationRepository $conversationRepository)
     {
 
         $this->utilisateurRepository=$utilisateurRepository;
@@ -45,16 +46,16 @@ private $utilisateurRepository;
 
 
     /**
-     * @Route("/", name="NewConversation",methods={"POST"})
+     * @Route("/{id}", name="newConversations")
      * @param Request $request
      * @return  JsonResponse
      * @throws \Exception
      */
-    public function index(Request $request): Response
+    public function index(Request $request,int $id): Response
     {
 
         $otherUser=$request->get('otherUser',0);
-        $otherUser= $this->utilisateurRepository->find($otherUser);
+        $otherUser= $this->utilisateurRepository->find($id);
         if(is_null($otherUser)){
             throw new \Exception("utilisateur nexiste pas");
         }
@@ -68,10 +69,12 @@ private $utilisateurRepository;
             $otherUser->getId(),
             $this->getUser()->getId()
         );
+       // dd($conversation);
+      //  return $this->json();
 
 
         if (count($conversation)){
-         throw new \Exception("la conversation existe deja");
+            throw new \Exception("la conversation existe deja");
         }
         $conversation=new Conversation();
         $enqueteur= new Enqueteur();
@@ -86,19 +89,19 @@ private $utilisateurRepository;
 
         $this->entityManager->getConnection()->beginTransaction();
         try{
-                $this->entityManager->persist($conversation);
+            $this->entityManager->persist($conversation);
             $this->entityManager->persist($enqueteur);
             $this->entityManager->persist($otherenqueteur);
 
 
             $this->entityManager->flush();
-                $this->entityManager->commit();
+            $this->entityManager->commit();
         }
         catch(\Exception $e){
             $this->entityManager->rollback();
             throw $e;
         }
-        $this->entityManager->commit();
+      //  $this->entityManager->commit();
         return $this->json([
             'id'=>$conversation->getId()
         ], Response::HTTP_CREATED,[],[]
@@ -106,11 +109,12 @@ private $utilisateurRepository;
 
 
     }
-    /**
+  /**
      * @Route("/",name="getConversations",methods={"GET"})
      */
     public  function getConvs (){
-        $conversations=$this->conversationRepository->findConversationByUtilisateur($this->getUser()->getId());
+        $conversations=$this->conversationRepository->findConversationsByUser($this->getUser()->getId());
+        //dd($conversations);
         return $this->json($conversations);
     }
 }

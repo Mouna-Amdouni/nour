@@ -25,62 +25,72 @@ class Enqueteur implements UserInterface
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255,nullable=true)
      */
     private $nom;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255,nullable=true)
      */
     private $prenom;
 
+
     /**
-     * @ORM\Column(type="date")
+     * @ORM\ManyToOne(targetEntity="Utilisateur", inversedBy="enqueteurs")
+     */
+    private $utilisateur;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Conversation", inversedBy="enqueteurs")
+     */
+    private $conversation;
+    /**
+     * @ORM\Column(type="date",nullable=true)
      */
     private $dateNaissance;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255,nullable=true)
      */
     private $email;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer",nullable=true)
      */
     private $tel;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255,nullable=true)
      */
     private $motDePasse;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255,nullable=true)
      */
     private $matriculeFiscale;
 
     /**
-     * @ORM\Column(type="blob")
+     * @ORM\Column(type="blob",nullable=true)
      */
     private $registreDesCommeerces;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255,nullable=true)
      */
     private $adresseSociete;
 
     /**
-     * @ORM\Column(type="blob")
+     * @ORM\Column(type="blob",nullable=true)
      */
     private $logo;
 
     /**
-     * @ORM\Column(type="boolean")
+     * @ORM\Column(type="boolean",nullable=true)
      */
     private $genre;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer",nullable=true)
      */
     private $cin;
 
@@ -230,7 +240,7 @@ class Enqueteur implements UserInterface
 
         return $this;
     }
-    
+
 
     public function getCin(): ?int
     {
@@ -243,7 +253,7 @@ class Enqueteur implements UserInterface
 
         return $this;
     }
-    
+
     public function __toString()
     {
         return (string) $this->getid();
@@ -302,10 +312,38 @@ class Enqueteur implements UserInterface
 
         return $this;
     }
-
+    /**
+     * @ORM\Column(type="json")
+     */
+    private $roles = [];
     public function eraseCredentials(){}
     public function getSalt(){}
-    public function getRoles(){
-        return ['ROLE_USER'];
+    public function getRoles():array{
+        $roles=$this->roles;
+        $roles[] = 'ROLE_USER';
+        return array_unique($roles);
+    }
+    public function getUtilisateur(): ?Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(?Utilisateur $utilisateur): self
+    {
+        $this->utilisateur = $utilisateur;
+
+        return $this;
+    }
+
+    public function getConversation(): ?Conversation
+    {
+        return $this->conversation;
+    }
+
+    public function setConversation(?Conversation $conversation): self
+    {
+        $this->conversation = $conversation;
+
+        return $this;
     }
 }

@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\Enqueteur;
 use App\Entity\Sondage;
 use App\Entity\Question;
+use App\Entity\Utilisateur;
 use App\Form\SondageType;
 use App\Repository\SondageRepository;
 use App\Repository\SujetRepository;
@@ -52,21 +54,39 @@ class SondageController extends AbstractController
 
     /**
      * @Route("/new/{id}", name="sondage_new", methods={"GET","POST"})
+     * @param $id
+     * @param Request $request
+     * @param SujetRepository $sujetRepository
+     * @param Utilisateur $utilisateur
+     * @return Response
      */
-    public function new($id,Request $request,SujetRepository $sujetRepository): Response
+    public function new($id,Request $request,SujetRepository $sujetRepository,Enqueteur $utilisateur): Response
     {
+//        dd($request);
         $sondage = new Sondage();
         $form = $this->createForm(SondageType::class, $sondage);
         $form->handleRequest($request);
+        $enqueteur = new Enqueteur();
+      //  $enqueteur=$enqueteur->
+
+//        $utilisateur= new Utilisateur();
+//        $utilisateur=$utilisateur->getId();
+        //dd($utilisateur);
         $sujet=$sujetRepository->find($id);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
             $entityManager = $this->getDoctrine()->getManager();
             $sondage->setSujet($sujet);
+            $sondage->setEnqueteur($utilisateur);
+            //dd($sondage);
             $entityManager->persist($sondage);
             $entityManager->flush();
 
-            return $this->redirectToRoute('neww',['id'=>$sondage->getId()]);
+            return $this->redirectToRoute('neww', [
+                    'id' => $sondage->getId()
+                ]
+            );
         }
 
         return $this->render('sondage/new.html.twig', [
@@ -78,6 +98,8 @@ class SondageController extends AbstractController
 
     /**
      * @Route("/{id}", name="sondage_show", methods={"GET"})
+     * @param Sondage $sondage
+     * @return Response
      */
     public function show(Sondage $sondage): Response
     {

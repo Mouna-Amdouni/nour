@@ -5,9 +5,9 @@ namespace App\Repository;
 use App\Entity\Conversation;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Doctrine\ORM\Query\Expr\Orx;
+
 use Doctrine\ORM\Query\Expr\Join;
-use function Doctrine\ORM\QueryBuilder;
+
 /**
  * @method Conversation|null find($id, $lockMode = null, $lockVersion = null)
  * @method Conversation|null findOneBy(array $criteria, array $orderBy = null)
@@ -51,6 +51,7 @@ class ConversationRepository extends ServiceEntityRepository
     */
 
 
+
     public function findConversationByParticipants(int $otherUserId, int $myId)
     {
         $qb = $this->createQueryBuilder('c');
@@ -78,20 +79,40 @@ class ConversationRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
-public function findConversationByUtilisateur(int $userid){
-        $qb=$this->createQueryBuilder('c');
-        $qb->
-    select('otherUser.nom','c.id as conversationId','lm.content','lm.createdAt')
-    ->innerJoin('c.enqueteurs','p',join::WITH,$qb->expr()->neq('p.utilisateur',':utilisateur'))
-    ->innerJoin('c.enqueteurs','me',Join::WITH,$qb->expr()->neq('me.utilisateur',':utilisateur'))
-    ->leftJoin('c.lastMessage','lm')
-            ->innerJoin('me.utilisateur','meUtilisateur')
-            ->innerJoin('p.utilisateur','otherUser')
-            ->where('meUtilisateur.id=:utilisateur')
-            ->setParameter('utilisateur',$userid)
-            ->orderBy('lm.createdAt','DESC')
 
-    ;
+    public function findConversationsByUser(int $userId)
+    {
+        $qb = $this->createQueryBuilder('c');
+        $qb
+
+            ->select('otherUser.nom', 'c.id as conversationId', 'lm.content', 'lm.createdAt')
+            ->innerJoin('c.enqueteurs', 'p', Join::WITH, $qb->expr()->neq('p.utilisateur', ':utilisateur'))
+            ->innerJoin('c.enqueteurs', 'me', Join::WITH, $qb->expr()->eq('me.utilisateur', ':utilisateur'))
+           ->leftJoin('c.lastMessage', 'lm')
+            ->innerJoin('me.utilisateur', 'meUser')
+            ->innerJoin('p.utilisateur', 'otherUser')
+            ->where('meUser.id = :utilisateur')
+            ->setParameter('utilisateur', $userId)
+            ->orderBy('lm.createdAt', 'DESC')
+        ;
+
         return $qb->getQuery()->getResult();
-}
+    }
+    public function checkIfUserisParticipant(int $conversationId, int $userId)
+    {
+        $qb = $this->createQueryBuilder('c');
+        $qb
+            ->innerJoin('c.enqueteurs', 'p')
+            ->where('c.id = :conversationId')
+            ->andWhere(
+                $qb->expr()->eq('p.utilisateur', ':utilisateurId')
+            )
+            ->setParameters([
+                'conversationId' => $conversationId,
+                'utilisateurId' => $userId
+            ])
+        ;
+
+        return $qb->getQuery()->getOneOrNullResult();
+    }
 }

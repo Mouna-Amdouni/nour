@@ -78,10 +78,23 @@ class Utilisateur implements UserInterface
      * @ORM\OneToMany(targetEntity=Reponse::class, mappedBy="utilisateur")
      */
     private $reponses;
+    /**
+     * @ORM\OneToMany(targetEntity="Enqueteur",mappedBy="utilisateur")
+     */
+    private $enqueteurs;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Message::class, mappedBy="utilisateurId")
+     */
+    private $messagess;
+
+
 
     public function __construct()
     {
         $this->reponses = new ArrayCollection();
+        $this->messagess = new ArrayCollection();
+        $this->enqueteurs=new  ArrayCollection();
     }
 
     public function getId(): ?int
@@ -269,8 +282,87 @@ class Utilisateur implements UserInterface
 
     public function eraseCredentials(){}
     public function getSalt(){}
-    public function getRoles(){
-        return ['ROLE_USER'];
+    /**
+     * @ORM\Column(type="json")
+     */
+    private $roles = [];
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
     }
 
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
+
+        return $this;
+    }
+    /**
+     * @return Collection|Enqueteur[]
+     */
+    public function getEnqueteurs(): Collection
+    {
+        return $this->enqueteurs;
+    }
+
+    public function addEnqueteur(Enqueteur $enqueteur): self
+    {
+        if (!$this->enqueteurs->contains($enqueteur)) {
+            $this->enqueteurs[] = $enqueteur;
+            $enqueteur->setUtilisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEnqueteur(Enqueteur $enqueteur): self
+    {
+        if ($this->enqueteurs->contains($enqueteur)) {
+            $this->enqueteurs->removeElement($enqueteur);
+            // set the owning side to null (unless already changed)
+            if ($enqueteur->getUtilisateur() === $this) {
+                $enqueteur->setUtilisateur(null);
+            }
+        }
+
+        return $this;
+    }
+
+
+    /**
+     * @return Collection|Message[]
+     */
+    public function getMessagess(): Collection
+    {
+        return $this->messagess;
+    }
+
+    public function addMessagess(Message $messagess): self
+    {
+        if (!$this->messagess->contains($messagess)) {
+            $this->messagess[] = $messagess;
+            $messagess->setUtilisateur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessagess(Message $messagess): self
+    {
+        if ($this->messagess->removeElement($messagess)) {
+            // set the owning side to null (unless already changed)
+            if ($messagess->getUtilisateur() === $this) {
+                $messagess->setUtilisateur(null);
+            }
+        }
+
+        return $this;
+    }
 }
