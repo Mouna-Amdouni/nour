@@ -19,7 +19,7 @@ use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 /**
- * @Route("/messages", name="messages.", methods={"GET"})
+ * @Route("/messages", name="messages.")
  */
 class MessageController extends AbstractController
 {
@@ -27,7 +27,7 @@ class MessageController extends AbstractController
     const ATTRIBUTES_TO_SERIALIZE=['id','content','createdAt','mine'];
 
     /**
-     * @var $entityManager
+     * @var EntityManagerInterface
      */
     private $entityManager;
     /**
@@ -36,7 +36,7 @@ class MessageController extends AbstractController
      */
     private $messageRepository;
     /**
-     * @var $utilistaeurRepository
+     * @var UtilisateurRepository
      */
     private $utilistaeurRepository;
     public function __construct(EntityManagerInterface $entityManager , MessageRepository $messageRepository
@@ -50,7 +50,7 @@ class MessageController extends AbstractController
     }
 
     /**
-     * @Route("/{id}",name="getMessages")
+     * @Route("/{id}",name="getMessages", methods={"GET"})
 
      * @param Request $request
      * @param Conversation $conversation
@@ -65,21 +65,25 @@ class MessageController extends AbstractController
             $conversation->getId()
         );
 
-        dd($messages);
-        return $this->render('message/index.html.twig',[
+      //  dd($messages);
+
+     /*   return $this->render('message/index.html.twig',[
             'controller_name'=>'Meassagecontroller'
         ]);
-      /*  /**
+     */
+   /*  /**
          * @var $message Message
          */
-        /*array_map(function ($message){
+     /*   array_map(function ($message) {
             $message->setMine(
-                $message->getUser()->getId()===$this->getUser()->getId() ? true: false
+                $message->getUtilisateur()->getId() === $this->getUser()->getId()
+                    ? true : false
             );
-        },$messages);
-
-        return $this->json($messages,Response::HTTP_OK,[],[
-            'attributes'=> self::ATTRIBUTES_TO_SERIALIZE
+        }, $messages);
+*/
+//dd($message);
+        return $this->json($messages, Response::HTTP_OK, [], [
+            'attributes' => self::ATTRIBUTES_TO_SERIALIZE
         ]);
 
     }
@@ -90,7 +94,7 @@ class MessageController extends AbstractController
      * @return JsonResponse
      * @throws \Exception
      */
-    /*public function newMessage(Request $request , Conversation $conversation){
+    public function newMessage(Request $request , Conversation $conversation){
         $user= $this->getUser();
         $content= $request->get('content',null);
 //dd($content);
@@ -99,7 +103,7 @@ class MessageController extends AbstractController
         $message->setUtilisateur($this->utilistaeurRepository->findOneBy(['id'=>1]));
         $message->setMine(true);
         $conversation->addMessage($message);
-
+$conversation->setLastMessage($message);
         $this->entityManager->getConnection()->beginTransaction();
 
         try{
@@ -116,5 +120,6 @@ class MessageController extends AbstractController
             'attributes' =>self::ATTRIBUTES_TO_SERIALIZE
         ]);
     }
-*/
-    }}
+
+
+}

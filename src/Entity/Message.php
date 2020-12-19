@@ -40,7 +40,10 @@ class Message
      * @ORM\ManyToOne(targetEntity=Conversation::class, inversedBy="lastMessageId")
      */
     private $conversation;
+
+
     private $mine;
+
 
     public function getId(): ?int
     {
@@ -84,6 +87,7 @@ class Message
     }
     public function getUtilisateur(): ?Utilisateur
     {
+
         return $this->utilisateur;
     }
 
@@ -93,6 +97,14 @@ class Message
 
         return $this;
     }
+  
+    public function __toString(){
+        // to show the name of the Category in the select
+        return $this->content;
+        // to show the id of the Category in the select
+        // return $this->id;
+    }
+
     /**
      * @return mixed
      */
@@ -108,10 +120,6 @@ class Message
     {
         $this->mine = $mine;
     }
-    public function __toString(){
-        // to show the name of the Category in the select
-        return $this->content;
-        // to show the id of the Category in the select
-        // return $this->id;
-    }
+
+
 }
